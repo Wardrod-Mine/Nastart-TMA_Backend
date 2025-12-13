@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiogram = "^3.14.0"
+sqlalchemy = "^2.0.36"
+psycopg = {extras = ["binary"], version = "^3.2.3"}
+pydantic-settings = "^2.6.1"
+fastapi = "^0.115.4"
+uvicorn = "^0.32.0"
+yookassa = "^3.4.1"
+alembic = "^1.14.0"
+email-validator = "^2.2.0"
+shapely = "^2.0.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+target-version = "py310"
+exclude = ["alembic"]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG001", # unused arguments in functions
+]
+ignore = [
+    "E712"
+]
