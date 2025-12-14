@@ -36,14 +36,28 @@ def check_hash(data_check_string: str, hash: str) -> bool:
 
 
 async def get_user(
-    db: SessionDep, authorization: str = Header("Authorization")
-) -> User:
-    data = unquote(authorization.split(" ")[1]).split("&")
+    db: SessionDep, authorization: str | None = Header(default=None)
+) -> User | None:
+    # Без авторизации — сразу None, чтобы не падать
+    if not authorization:
+        return None
+
+    parts = authorization.split(" ", 1)
+    token = parts[1] if len(parts) == 2 else parts[0]
+    token = unquote(token)
+
+    if not token:
+        return None
+
+    data = token.split("&")
 
     data_check_string = "\n".join(
         sorted(filter(lambda kv: not kv.startswith("hash"), data))
     )
-    init_data = dict(x.split("=") for x in data)
+    init_data = dict(x.split("=") for x in data if "=" in x and x)
+
+    if "hash" not in init_data or "user" not in init_data:
+        raise HTTPException(status_code=401, detail="Invalid authorization")
 
     check_hash(data_check_string, init_data["hash"])
 
