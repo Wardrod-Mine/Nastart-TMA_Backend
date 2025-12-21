@@ -1,6 +1,7 @@
 import os
 
 from aiogram import Bot, F, Router
+from PIL import Image as PILImage
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
@@ -220,8 +221,24 @@ async def finish_photos(
     os.makedirs(os.path.join("../media/photos"), exist_ok=True)
 
     for file_path, file_id in image_paths:
-        await bot.download_file(file_path, f"../media/photos/{file_id}.jpg")
-        urls.append(f"/photos/{file_id}.jpg")
+        # сохраняем с оригинальным расширением, если есть
+        ext = os.path.splitext(file_path)[1] or ".jpg"
+        raw_path = f"../media/photos/{file_id}{ext}"
+        await bot.download_file(file_path, raw_path)
+        # пробуем конвертировать в JPG для совместимости
+        try:
+            im = PILImage.open(raw_path)
+            rgb = im.convert("RGB")
+            jpg_path = f"../media/photos/{file_id}.jpg"
+            rgb.save(jpg_path, format="JPEG", quality=85)
+            if raw_path != jpg_path and os.path.exists(raw_path):
+                try:
+                    os.remove(raw_path)
+                except OSError:
+                    pass
+            urls.append(f"/photos/{file_id}.jpg")
+        except Exception:
+            urls.append(f"/photos/{file_id}{ext}")
 
     update_item_images(db, item_id, urls)
 
